@@ -27,14 +27,21 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--popover))',
   				foreground: 'hsl(var(--popover-foreground))'
   			},
-  			primary: {
-  				DEFAULT: '#FF7E67', // Muted Coral
-  				foreground: '#FFFFFF',
-  			},
-  			secondary: {
-  				DEFAULT: '#2C3E50', // Deep Navy
-  				foreground: '#FFFFFF',
-  			},
+			primary: {
+				DEFAULT: '#FF7E67', // Muted Coral
+				foreground: '#FFFFFF',
+			},
+			coral: {
+				DEFAULT: '#FF7E67',
+				light: '#FDA085',
+			},
+			navy: {
+				DEFAULT: '#2C3E50',
+			},
+			secondary: {
+				DEFAULT: '#2C3E50', // Deep Navy
+				foreground: '#FFFFFF',
+			},
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
   				foreground: 'hsl(var(--muted-foreground))'
@@ -63,10 +70,9 @@ const config: Config = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-      fontFamily: {
-        sans: ["var(--font-pretendard)", "sans-serif"],
-        serif: ["var(--font-gowun-batang)", "serif"],
-      },
+			fontFamily: {
+				sans: ["var(--font-pretendard)", "Pretendard Variable", "Pretendard", "sans-serif"],
+			},
   	}
   },
   plugins: [require("tailwindcss-animate")],
