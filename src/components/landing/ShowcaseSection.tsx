@@ -38,18 +38,18 @@ const showcases = [
 
 export function ShowcaseSection() {
 	return (
-		<section className="py-20 md:py-32 bg-background">
+		<section className="py-12 md:py-24 bg-background">
 			<div className="container px-4 md:px-6">
-				<div className="text-center mb-16">
-					<h2 className="text-3xl md:text-4xl font-serif font-bold text-secondary mb-4">
+				<div className="text-center mb-12 md:mb-16">
+					<h2 className="text-2xl md:text-4xl font-serif font-bold text-secondary mb-4 text-balance">
 						&quot;이게 정말 AI라고요?&quot;
 					</h2>
-					<p className="text-muted-foreground">
+					<p className="text-muted-foreground text-sm md:text-base text-balance">
 						모바일 청첩장 메인 커버에 최적화된 구도로 생성됩니다.
 					</p>
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-6 max-w-6xl mx-auto h-auto md:h-[1200px]">
+				<div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-4 md:gap-6 max-w-6xl mx-auto h-auto md:h-[1000px]">
 					{showcases.map((item, index) => (
 						<motion.div
 							key={index}

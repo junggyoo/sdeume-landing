@@ -24,7 +24,7 @@ export function CTASection() {
   };
 
   return (
-    <section id="cta-section" className="py-24 bg-secondary text-white relative overflow-hidden">
+    <section id="cta-section" className="py-16 md:py-24 bg-secondary text-white relative overflow-hidden">
        {/* Decorative Elements */}
        <div className="absolute top-0 right-0 p-20 opacity-10">
             <div className="w-64 h-64 rounded-full bg-primary blur-3xl" />
@@ -40,8 +40,8 @@ export function CTASection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
         >
-            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-6">
-            지금 신청하시는 100쌍에게만<br /> <span className="text-primary">무료로 열립니다.</span>
+            <h2 className="text-2xl md:text-5xl font-serif font-bold mb-6 text-balance">
+            지금 신청하시는 100쌍에게만 <span className="text-primary">무료로 열립니다.</span>
             </h2>
             <p className="text-accent/80 text-lg mb-10 leading-relaxed">
             정식 출시 전, 모바일 청첩장용 <span className="text-white font-bold">Best Cut 3종 세트</span>를<br className="hidden md:block" /> 가장 먼저 받아보세요.

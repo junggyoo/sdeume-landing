@@ -26,7 +26,7 @@ const steps = [
 
 export function SolutionSection() {
   return (
-    <section className="py-20 md:py-32 bg-white relative overflow-hidden">
+    <section className="py-12 md:py-24 bg-white relative overflow-hidden">
         {/* Decorative Background Element */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
@@ -34,9 +34,9 @@ export function SolutionSection() {
         </div>
 
       <div className="container px-4 md:px-6 relative z-10">
-        <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-secondary mb-4">
-            내 폰에 있는 셀카로<br className="md:hidden" /> 완성하는 웨딩 화보
+        <div className="text-center mb-12 md:mb-20">
+          <h2 className="text-2xl md:text-4xl font-serif font-bold text-secondary mb-4 text-balance">
+            내 폰에 있는 셀카로 완성하는 웨딩 화보
           </h2>
           <div className="flex flex-wrap justify-center gap-4 text-sm md:text-base text-muted-foreground mt-6">
             <span className="px-4 py-2 bg-accent/30 rounded-full text-secondary font-medium">🚫 스튜디오 예약 없음</span>

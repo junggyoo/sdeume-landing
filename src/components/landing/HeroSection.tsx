@@ -58,21 +58,18 @@ export function HeroSection() {
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.8, ease: "easeOut" }}
-					className="max-w-3xl mx-auto space-y-6"
+					className="max-w-3xl mx-auto space-y-4 md:space-y-6"
 				>
-					<h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold leading-tight drop-shadow-lg">
-						스튜디오 촬영,
-						<br className="hidden md:block" /> 꼭 해야 할까요?
+					<h1 className="text-3xl md:text-6xl lg:text-7xl font-serif font-bold leading-tight drop-shadow-lg text-balance px-4">
+						스튜디오 촬영, 꼭 해야 할까요?
 					</h1>
 
-					<p className="text-lg md:text-2xl opacity-90 font-light max-w-2xl mx-auto drop-shadow-md">
+					<p className="text-base md:text-2xl opacity-90 font-light max-w-2xl mx-auto drop-shadow-md px-4 text-pretty">
 						모바일 청첩장용 사진, 300만 원 대신{" "}
-						<span className="font-serif italic text-primary-foreground font-bold text-3xl">
+						<span className="font-serif italic text-primary-foreground font-bold text-2xl md:text-3xl">
 							3분
 						</span>
-						이면 충분합니다.
-						<br />
-						국내 최초 실속파 예비부부를 위한 AI 웨딩 사진 생성 서비스.
+						이면 충분합니다. 국내 최초 실속파 예비부부를 위한 AI 웨딩 사진 생성 서비스.
 					</p>
 				</motion.div>
 				{/* 스크롤 힌트 */}

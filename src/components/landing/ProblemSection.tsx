@@ -24,11 +24,11 @@ const problems = [
 
 export function ProblemSection() {
   return (
-    <section className="py-20 md:py-32 bg-background">
+    <section className="py-12 md:py-24 bg-background">
       <div className="container px-4 md:px-6">
-        <div className="text-center mb-16 space-y-4">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-secondary">
-            남들 다 하니까 하는 스드메,<br className="md:hidden" /> 이런 고민 없으셨나요?
+        <div className="text-center mb-12 md:mb-16 space-y-4">
+          <h2 className="text-2xl md:text-4xl font-serif font-bold text-secondary text-balance">
+            남들 다 하니까 하는 스드메, 이런 고민 없으셨나요?
           </h2>
           <p className="text-muted-foreground text-lg">
             가장 합리적인 커플을 위해, 거품은 빼고 퀄리티만 남겼습니다.

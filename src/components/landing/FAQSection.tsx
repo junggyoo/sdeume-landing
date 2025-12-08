@@ -15,10 +15,10 @@ const faqs = [
 
 export function FAQSection() {
   return (
-    <section className="py-20 bg-background">
+    <section className="py-12 md:py-24 bg-background">
       <div className="container px-4 md:px-6 max-w-3xl mx-auto">
          <div className="text-center mb-12">
-          <h2 className="text-3xl font-serif font-bold text-secondary">
+          <h2 className="text-2xl md:text-4xl font-serif font-bold text-secondary text-balance">
             자주 묻는 질문
           </h2>
         </div>

@@ -73,5 +73,27 @@
 	}
 	body {
 		@apply bg-background text-foreground;
+		word-break: keep-all;
+		overflow-wrap: break-word;
+	}
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		text-wrap: balance;
+	}
+	p {
+		text-wrap: pretty;
+	}
+}
+
+@layer utilities {
+	.text-balance {
+		text-wrap: balance;
+	}
+	.text-pretty {
+		text-wrap: pretty;
 	}
 }
