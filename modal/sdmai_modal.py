@@ -9,7 +9,6 @@ import json
 import time
 import base64
 import subprocess
-from pathlib import Path
 
 # Modal 앱 정의
 app = modal.App("sdmai-comfyui")
@@ -31,10 +30,12 @@ image = (
         "libxext6",
         "ffmpeg",
     )
+    # NumPy 1.x를 먼저 설치 (PyTorch와 호환성 문제 방지)
+    .pip_install("numpy<2")
     .pip_install(
-        "torch==2.1.0",
-        "torchvision==0.16.0",
-        "torchaudio==2.1.0",
+        "torch==2.4.0",
+        "torchvision==0.19.0",
+        "torchaudio==2.4.0",
         extra_index_url="https://download.pytorch.org/whl/cu121",
     )
     .pip_install(
@@ -42,25 +43,308 @@ image = (
         "aiohttp",
         "requests",
         "Pillow",
-        "numpy",
         "ultralytics",
         "opencv-python-headless",
         "scikit-image",
         "piexif",
         "fastapi",
+        "dill",  # Impact-Subpack 의존성
+        "segment-anything",  # Impact Pack 의존성
     )
     .run_commands(
         # ComfyUI 설치
         "comfy --skip-prompt install --nvidia",
-        # Impact Pack 설치
-        "comfy node install ComfyUI-Impact-Pack",
+    )
+    .run_commands(
+        # Impact Pack 설치 (git clone으로 직접 설치)
+        "cd /root/comfy/ComfyUI/custom_nodes && git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git",
+        # Impact Pack 의존성 설치
+        "cd /root/comfy/ComfyUI/custom_nodes/ComfyUI-Impact-Pack && pip install -r requirements.txt || true",
         # Impact Subpack 설치 (UltralyticsDetectorProvider)
-        "cd /root/comfy/ComfyUI/custom_nodes && git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git || true",
+        "cd /root/comfy/ComfyUI/custom_nodes && git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git",
+        # Impact Subpack 의존성 설치
+        "cd /root/comfy/ComfyUI/custom_nodes/ComfyUI-Impact-Subpack && pip install -r requirements.txt || true",
     )
 )
 
-# 워크플로우 JSON 경로
-WORKFLOW_PATH = Path(__file__).parent / "workflow_api.json"
+# 워크플로우 JSON (직접 임베드)
+WORKFLOW_JSON = r'''
+{
+  "3": {
+    "inputs": {
+      "seed": 1103471731063007,
+      "steps": 20,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": ["34", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
+    },
+    "class_type": "KSampler",
+    "_meta": {"title": "KSampler"}
+  },
+  "4": {
+    "inputs": {"ckpt_name": "flux1-dev-fp8.safetensors"},
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {"title": "체크포인트 로드"}
+  },
+  "5": {
+    "inputs": {"width": 1024, "height": 1024, "batch_size": 1},
+    "class_type": "EmptyLatentImage",
+    "_meta": {"title": "빈 잠재 이미지"}
+  },
+  "6": {
+    "inputs": {
+      "text": "(Front view, full frontal shot, facing camera directly, looking at viewer:1.4), (Full body shot:1.5), wide angle shot, A high-end editorial wedding photo of a Korean groom and a Korean bride standing side by side facing forward in a luxury Cheongdam-dong minimal studio.\n\n(Background): Clean white horizon, soft shadows, minimalist classic molding wall, elegant atmosphere.\n\n(Groom styling): The groom is standing tall facing the camera, wearing a perfectly tailored black tuxedo, black bow tie, and shiny patent leather shoes. He has a (trendy Korean Guile cut hairstyle:1.3), wet hair styling, clean and sophisticated look. He is looking straight at the camera with a gentle smile.\n\n(Bride styling): The bride is wearing a luxurious (Mermaid line wedding dress:1.2) that accentuates her figure, with intricate lace details and a long veil flowing down. She has a (modern low bun hairstyle:1.3) with (wispy side bangs:1.2). She is wearing high heels, standing gracefully facing forward, looking straight at the camera.\n\n(Lighting & Quality): Softbox studio lighting, high-key lighting, soft skin texture, 8k resolution, highly detailed fabric texture, Vogue Korea style, sharp focus, professional photography, Canon R5, 85mm lens.\n\n(western, caucasian, white people, foreigner, american, european:1.3), blue eyes, blonde hair,\n(malformed hands, fused fingers, too many fingers, missing fingers, extra fingers:1.3), impossible hand pose, claw, paw, floating hands, long fingers, bad anatomy, bad proportions, malformed limbs, extra limbs, missing limbs, disconnected limbs, long neck, mutated, deformed, disfigured, (illustration, painting, drawing, anime, cartoon, 3d render:1.2), text, watermark, signature, logo, low quality, worst quality, lowres, glitch, cropped, casual clothes, jeans, messy, dark, gloomy",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  },
+  "7": {
+    "inputs": {
+      "text": "(western, caucasian, white people, foreigner, american, european:1.3), blue eyes, blonde hair,\n(malformed hands, fused fingers, too many fingers, missing fingers, extra fingers:1.3), impossible hand pose, claw, paw, floating hands, long fingers, bad anatomy, bad proportions, malformed limbs, extra limbs, missing limbs, disconnected limbs, long neck, mutated, deformed, disfigured, (illustration, painting, drawing, anime, cartoon, 3d render:1.2), text, watermark, signature, logo, low quality, worst quality, lowres, glitch, cropped, casual clothes, jeans, messy, dark, gloomy",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  },
+  "8": {
+    "inputs": {"samples": ["3", 0], "vae": ["4", 2]},
+    "class_type": "VAEDecode",
+    "_meta": {"title": "VAE 디코드"}
+  },
+  "14": {
+    "inputs": {
+      "lora_name": "groom_lora.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": ["34", 0],
+      "clip": ["34", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {"title": "LoRA 로드"}
+  },
+  "15": {
+    "inputs": {
+      "lora_name": "bride_lora.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": ["34", 0],
+      "clip": ["34", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {"title": "LoRA 로드"}
+  },
+  "19": {
+    "inputs": {"model_name": "bbox/face_yolov8m.pt"},
+    "class_type": "UltralyticsDetectorProvider",
+    "_meta": {"title": "UltralyticsDetectorProvider"}
+  },
+  "21": {
+    "inputs": {
+      "text": "closeup of Korean TNDDMAN man, (East Asian facial features:1.2), brown eyes, black hair, (trendy Guile cut hairstyle:1.3), (wet hair styling:1.2), gentle smile, (cinematic lighting, warm spotlight:1.2)\n",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  },
+  "23": {
+    "inputs": {
+      "text": "closeup of Korean KIMJJ woman, (East Asian facial features:1.2), brown eyes, black hair, (modern low bun hairstyle:1.2), (wispy side bangs:1.2), soft makeup, (cinematic lighting, warm spotlight:1.2)\n",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  },
+  "24": {
+    "inputs": {"filename_prefix": "lora", "images": ["37", 0]},
+    "class_type": "SaveImage",
+    "_meta": {"title": "이미지 저장"}
+  },
+  "26": {
+    "inputs": {
+      "text": "woman, girl, female, makeup, lipstick, feminine, earrings, long hair, bad anatomy, distortion, low quality, worst quality, (western, caucasian, white people, foreigner, american, european:1.3), blue eyes, blonde hair",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  },
+  "27": {
+    "inputs": {
+      "text": "man, boy, male, beard, mustache, masculine, bad anatomy, distortion, low quality, worst quality, (western, caucasian, white people, foreigner, american, european:1.3), blue eyes, blonde hair,",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  },
+  "29": {
+    "inputs": {
+      "target": "area(=w*h)",
+      "order": true,
+      "take_start": 0,
+      "take_count": 1,
+      "segs": ["30", 0]
+    },
+    "class_type": "ImpactSEGSOrderedFilter",
+    "_meta": {"title": "SEGS Filter (ordered)"}
+  },
+  "30": {
+    "inputs": {
+      "threshold": 0.25,
+      "dilation": 10,
+      "crop_factor": 5,
+      "drop_size": 10,
+      "labels": "all",
+      "bbox_detector": ["19", 0],
+      "image": ["8", 0]
+    },
+    "class_type": "BboxDetectorSEGS",
+    "_meta": {"title": "BBOX Detector (SEGS)"}
+  },
+  "32": {
+    "inputs": {
+      "guide_size": 1024,
+      "guide_size_for": true,
+      "max_size": 1024,
+      "seed": 163068160694334,
+      "steps": 15,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 0.6,
+      "feather": 5,
+      "noise_mask": true,
+      "force_inpaint": true,
+      "wildcard": "",
+      "cycle": 1,
+      "inpaint_model": false,
+      "noise_mask_feather": 20,
+      "tiled_encode": false,
+      "tiled_decode": false,
+      "image": ["8", 0],
+      "segs": ["29", 0],
+      "model": ["14", 0],
+      "clip": ["14", 1],
+      "vae": ["4", 2],
+      "positive": ["21", 0],
+      "negative": ["26", 0]
+    },
+    "class_type": "DetailerForEach",
+    "_meta": {"title": "디테일러 (SEGS)"}
+  },
+  "33": {
+    "inputs": {
+      "guide_size": 1024,
+      "guide_size_for": true,
+      "max_size": 1024,
+      "seed": 733073276389082,
+      "steps": 15,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 0.6,
+      "feather": 5,
+      "noise_mask": true,
+      "force_inpaint": true,
+      "wildcard": "",
+      "cycle": 1,
+      "inpaint_model": false,
+      "noise_mask_feather": 20,
+      "tiled_encode": false,
+      "tiled_decode": false,
+      "image": ["32", 0],
+      "segs": ["29", 1],
+      "model": ["15", 0],
+      "clip": ["15", 1],
+      "vae": ["4", 2],
+      "positive": ["23", 0],
+      "negative": ["27", 0]
+    },
+    "class_type": "DetailerForEach",
+    "_meta": {"title": "디테일러 (SEGS)"}
+  },
+  "34": {
+    "inputs": {
+      "lora_name": "Flux-Realism.safetensors",
+      "strength_model": 0.45,
+      "strength_clip": 1,
+      "model": ["4", 0],
+      "clip": ["4", 1]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {"title": "LoRA 로드"}
+  },
+  "35": {
+    "inputs": {"model_name": "bbox/hand_yolov8s.pt"},
+    "class_type": "UltralyticsDetectorProvider",
+    "_meta": {"title": "UltralyticsDetectorProvider"}
+  },
+  "36": {
+    "inputs": {
+      "threshold": 0.4,
+      "dilation": 10,
+      "crop_factor": 3,
+      "drop_size": 10,
+      "labels": "all",
+      "bbox_detector": ["35", 0],
+      "image": ["33", 0]
+    },
+    "class_type": "BboxDetectorSEGS",
+    "_meta": {"title": "BBOX Detector (SEGS)"}
+  },
+  "37": {
+    "inputs": {
+      "guide_size": 512,
+      "guide_size_for": true,
+      "max_size": 1024,
+      "seed": 964000217776175,
+      "steps": 8,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 0.35,
+      "feather": 5,
+      "noise_mask": true,
+      "force_inpaint": true,
+      "wildcard": "",
+      "cycle": 1,
+      "inpaint_model": false,
+      "noise_mask_feather": 20,
+      "tiled_encode": false,
+      "tiled_decode": false,
+      "image": ["33", 0],
+      "segs": ["36", 0],
+      "model": ["4", 0],
+      "clip": ["34", 1],
+      "vae": ["4", 2],
+      "positive": ["38", 0],
+      "negative": ["39", 0]
+    },
+    "class_type": "DetailerForEach",
+    "_meta": {"title": "디테일러 (SEGS)"}
+  },
+  "38": {
+    "inputs": {
+      "text": "beautiful detailed hands, fingers, texture, anatomy",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  },
+  "39": {
+    "inputs": {
+      "text": "extra fingers, missing fingers, mutated",
+      "clip": ["34", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {"title": "CLIP 텍스트 인코딩 (프롬프트)"}
+  }
+}
+'''
 
 
 def download_file(url: str, dest: str) -> bool:
@@ -85,10 +369,10 @@ def download_file(url: str, dest: str) -> bool:
     image=image,
     gpu="A10G",
     timeout=600,
-    container_idle_timeout=300,
+    scaledown_window=300,
     volumes={"/models": models_volume},
-    allow_concurrent_inputs=4,
 )
+@modal.concurrent(max_inputs=4)
 class ComfyUIServer:
     """ComfyUI 서버 클래스"""
 
@@ -130,23 +414,25 @@ class ComfyUIServer:
         os.makedirs(f"{volume_models_dir}/loras", exist_ok=True)
         os.makedirs(f"{volume_models_dir}/ultralytics/bbox", exist_ok=True)
 
-        # ComfyUI 서버 시작
+        # ComfyUI 서버 시작 (로그를 직접 출력하도록 변경)
         self.process = subprocess.Popen(
             ["python", "main.py", "--listen", "127.0.0.1", "--port", "8188"],
             cwd=comfyui_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=None,  # 직접 출력
+            stderr=None,  # 직접 출력
         )
 
-        # 서버 준비 대기 (최대 120초)
-        max_wait = 120
+        # 서버 준비 대기 (최대 180초로 증가 - 첫 시작 시 모델 로딩 시간 필요)
+        max_wait = 180
         for i in range(max_wait):
             if self.check_server_ready():
                 print(f"ComfyUI server ready! (took {i+1} seconds)")
                 return
+            if i % 10 == 0:
+                print(f"Waiting for ComfyUI server... ({i}s)")
             time.sleep(1)
 
-        raise RuntimeError("ComfyUI server failed to start within 120 seconds")
+        raise RuntimeError("ComfyUI server failed to start within 180 seconds")
 
     @modal.exit()
     def stop_server(self):
@@ -156,7 +442,7 @@ class ComfyUIServer:
             self.process.wait()
             print("ComfyUI server stopped")
 
-    @modal.web_endpoint(method="POST")
+    @modal.fastapi_endpoint(method="POST")
     def generate(self, request: dict):
         """이미지 생성 API 엔드포인트"""
         import requests
@@ -184,14 +470,8 @@ class ComfyUIServer:
                 print(f"Downloading bride LoRA from {bride_lora_url}")
                 download_file(bride_lora_url, bride_lora_path)
 
-        # 워크플로우 로드
-        workflow_file = WORKFLOW_PATH
-        if not workflow_file.exists():
-            # 번들된 워크플로우가 없으면 기본 경로에서 시도
-            workflow_file = Path("/root/comfy/ComfyUI/workflow_api.json")
-
-        with open(workflow_file, "r") as f:
-            workflow = json.load(f)
+        # 워크플로우 로드 (임베드된 JSON 사용)
+        workflow = json.loads(WORKFLOW_JSON)
 
         # 워크플로우 동적 수정
         if prompt:
